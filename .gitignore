@@ -1,0 +1,25 @@
+# Java build and package output
+/build/
+/target/
+*.class
+*.jar
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
