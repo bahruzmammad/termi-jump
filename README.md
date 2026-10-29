@@ -4,14 +4,16 @@ A simple terminal-based platform jumping game written in Java.
 
 ## Gameplay
 
-The goal of Termi-Jump is to climb as high as possible by jumping on platforms.
-The score is determined by the maximum height you reach. The game ends if you
-fall off the bottom of the screen.
+The goal of Termi-Jump is to climb as high as possible by landing on platforms.
+Each landing automatically sends you jumping again. Guide the player left and
+right to reach the next platform; falling too far ends the run. The display
+shows your score, current height, and best score for the current game session.
 
 ## Controls
 
 - Move Left: A or ← (Left Arrow)
 - Move Right: D or → (Right Arrow)
+- Restart after game over: R
 - Quit: Q or Esc
 
 ## Requirements
