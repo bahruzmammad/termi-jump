@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
+/** Covers game rules and terminal rendering without requiring a live keyboard. */
 public final class GameTest {
+    /** Verifies initial player values and horizontal movement limits. */
     @Test
     void playerInitializesAndMovesWithinBounds() {
         Player player = new Player(5, 10, false);
@@ -27,6 +29,7 @@ public final class GameTest {
         check(player.x() >= 0, "Player should remain inside the left edge");
     }
 
+    /** Checks that gravity changes vertical speed and an initial jump moves upward. */
     @Test
     void gravityAndJumpVelocityAreApplied() {
         Player player = new Player(5, 4, true);
@@ -41,6 +44,7 @@ public final class GameTest {
         check(falling.y() < 4, "Falling player should descend");
     }
 
+    /** Confirms that crossing a platform while falling starts another jump. */
     @Test
     void landingTriggersAnotherJump() {
         Player player = new Player(4, 1, false);
@@ -51,6 +55,7 @@ public final class GameTest {
         check(player.velocityY() > 0, "Landing should immediately start the next jump");
     }
 
+    /** Prevents landings through a platform or outside its horizontal edges. */
     @Test
     void playerCannotLandOnPlatformFromBelowOrOutsideItsEdge() {
         Player below = new Player(4, -1, false);
@@ -63,6 +68,7 @@ public final class GameTest {
         check(outside.y() < 0, "Player outside a platform edge should fall past it");
     }
 
+    /** Ensures score follows the run's peak and the best survives a restart. */
     @Test
     void scoreTracksMaximumHeightAndKeepsBestAcrossRuns() {
         ScoreTracker score = new ScoreTracker(1);
@@ -76,8 +82,10 @@ public final class GameTest {
         equal(130, score.bestScore(), "Best score survives restart");
     }
 
+    /** Checks generated platform bounds, vertical spacing, and jump reachability. */
     @Test
     void platformsGenerateWithinReachableGapsAndWorldBounds() {
+        // A fixed seed keeps the generated layout stable so reachability checks are repeatable.
         PlatformGenerator generator = new PlatformGenerator(new Random(5));
         generator.reset(50);
         generator.generateThrough(500, 50);
@@ -95,12 +103,14 @@ public final class GameTest {
             double horizontalGap = Math.max(0, Math.max(
                     platform.x() - (previous.x() + previous.width()),
                     previous.x() - (platform.x() + platform.width())));
+            // Use the jump's descending flight time to bound how far the player can move.
             double landingTime = (24 + Math.sqrt(24 * 24 - 2 * 34 * gap)) / 34;
             check(horizontalGap <= 13 * landingTime + 0.001,
                     "Generated platform should be reachable with horizontal movement");
         }
     }
 
+    /** Verifies that old platforms are removed instead of accumulating forever. */
     @Test
     void discardedPlatformsDoNotAccumulate() {
         PlatformGenerator generator = new PlatformGenerator(new Random(5));
@@ -114,6 +124,7 @@ public final class GameTest {
                 "Discarding old platforms should retain current/upcoming platforms");
     }
 
+    /** Confirms callers receive immutable snapshots that do not change later. */
     @Test
     void platformSnapshotsDoNotExposeGeneratorChanges() {
         PlatformGenerator generator = new PlatformGenerator(new Random(5));
@@ -136,12 +147,14 @@ public final class GameTest {
         check(immutable, "Platform snapshots should not allow callers to mutate generator state");
     }
 
+    /** Rejects invalid coordinate values before they can enter game state. */
     @Test
     void invalidPlatformCoordinatesAreRejected() {
         assertThrows(IllegalArgumentException.class, () -> new Platform(Double.NaN, 0, 1));
         assertThrows(IllegalArgumentException.class, () -> new Player(0, Double.POSITIVE_INFINITY, false));
     }
 
+    /** Requires initialization before the generator can append new platforms. */
     @Test
     void generatorMustBeResetBeforeGeneratingPlatforms() {
         PlatformGenerator generator = new PlatformGenerator(new Random(5));
@@ -149,6 +162,7 @@ public final class GameTest {
         assertThrows(IllegalStateException.class, () -> generator.generateThrough(10, 50));
     }
 
+    /** Simulates several updates and checks that the camera follows the climb. */
     @Test
     void cameraFollowsThePlayerUpward() throws IOException {
         FakeInput input = new FakeInput();
@@ -161,6 +175,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Holds the fake player away from platforms until the game-over state is reached. */
     @Test
     void fallingBelowCameraTriggersGameOver() throws IOException {
         FakeInput input = new FakeInput();
@@ -174,6 +189,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Confirms restart resets the run but preserves its session best score. */
     @Test
     void restartResetsRunWithoutErasingBestScore() throws IOException {
         FakeInput input = new FakeInput();
@@ -198,6 +214,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Checks that a quit request moves the game to its terminal state. */
     @Test
     void quitInputChangesGameState() throws IOException {
         FakeInput input = new FakeInput();
@@ -209,6 +226,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Captures plain-text output and checks visible platforms and status labels. */
     @Test
     void rendererShowsEveryVisiblePlatformAndHud() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -229,6 +247,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Ensures rendering remains within the minimum supported terminal size. */
     @Test
     void rendererHandlesSmallTerminalDimensions() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -244,6 +263,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Checks that world heights are drawn relative to the camera's bottom edge. */
     @Test
     void rendererMapsPlatformsRelativeToCamera() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -258,6 +278,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Confirms ANSI output positions the cursor rather than scrolling the screen. */
     @Test
     void ansiRenderingUsesCursorPositioningWithoutScrollingLines() {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -271,6 +292,7 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Checks that color sequences and a measured non-zero FPS appear in the frame. */
     @Test
     void rendererShowsColorsAndMeasuredFps() throws InterruptedException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -286,10 +308,12 @@ public final class GameTest {
         renderer.close();
     }
 
+    /** Creates a renderer backed by memory so game tests do not write to the console. */
     private static TerminalRenderer renderer(int columns, int rows) {
         return new TerminalRenderer(new PrintStream(new ByteArrayOutputStream()), columns, rows, false);
     }
 
+    /** Counts a character in captured terminal output. */
     private static int count(String text, char character) {
         int count = 0;
         for (int index = 0; index < text.length(); index++) {
@@ -300,39 +324,47 @@ public final class GameTest {
         return count;
     }
 
+    /** Gives assertions a short name while keeping a readable failure message. */
     private static void check(boolean condition, String message) {
         assertTrue(condition, message);
     }
 
+    /** Compares floating-point coordinates with a small tolerance for physics calculations. */
     private static void equal(double expected, double actual, String message) {
         assertEquals(expected, actual, 0.0001, message);
     }
 
+    /** Compares enum and other object values using JUnit's standard equality assertion. */
     private static void equal(Object expected, Object actual, String message) {
         assertEquals(expected, actual, message);
     }
 
+    /** In-memory input implementation that lets each test control keys directly. */
     private static final class FakeInput implements InputSource {
         boolean left;
         boolean right;
         boolean quit;
         boolean restart;
 
+        /** Returns the test's current left-key setting. */
         @Override
         public boolean isLeftPressed() {
             return left;
         }
 
+        /** Returns the test's current right-key setting. */
         @Override
         public boolean isRightPressed() {
             return right;
         }
 
+        /** Returns whether the test has requested a quit. */
         @Override
         public boolean isQuitRequested() {
             return quit;
         }
 
+        /** Returns and clears the test's restart request, like the real input handler. */
         @Override
         public boolean consumeRestartRequest() {
             boolean requested = restart;

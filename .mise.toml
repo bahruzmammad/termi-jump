@@ -1,2 +1,3 @@
 [tools]
+# Use this Java version for local development; Maven targets Java 17.
 java = "temurin-27.0.1+0"

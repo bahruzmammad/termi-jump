@@ -9,6 +9,12 @@
     <version>1.0.0</version>
     <name>Termi-Jump</name>
 
+    <!--
+        Project-wide settings:
+        - compile source code to Java 17 bytecode;
+        - read and write project files as UTF-8;
+        - keep dependency versions in named properties for easier upgrades.
+    -->
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,6 +22,10 @@
         <junit.version>5.13.4</junit.version>
     </properties>
 
+    <!--
+        Runtime dependencies provide terminal input and native terminal support.
+        JUnit is test-scoped, so it is not included in the running application.
+    -->
     <dependencies>
         <dependency>
             <groupId>org.jline</groupId>
@@ -35,9 +45,15 @@
         </dependency>
     </dependencies>
 
+    <!--
+        Build configuration:
+        the shaded JAR includes runtime dependencies and names Main as its entry point,
+        which allows users to start it with "java -jar target/termijump.jar".
+    -->
     <build>
         <finalName>termijump</finalName>
         <plugins>
+            <!-- Compile with Java 17 and report compiler warnings. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -49,6 +65,7 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <!-- Run JUnit 5 tests on the class path rather than the Java module path. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -57,6 +74,7 @@
                     <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
+            <!-- Combine application classes and runtime libraries into one runnable JAR. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -68,14 +86,17 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <!-- Keep the original project dependency list in pom.xml. -->
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
+                                <!-- Add the application entry point and native-access manifest setting. -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.termijump.Main</mainClass>
                                     <manifestEntries>
                                         <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
                                     </manifestEntries>
                                 </transformer>
+                                <!-- Preserve service-provider registrations from bundled libraries. -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                         </configuration>

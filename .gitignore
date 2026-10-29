@@ -1,24 +1,29 @@
-# Java build and package output
+# Maven and Java build output:
+# /build/ is an optional local packaging directory; /target/ is Maven's default output.
 /build/
 /target/
+# Compiled bytecode and packaged application/dependency archives are generated files.
 *.class
 *.jar
 
-# IDE and editor files
+# IDE project settings belong to each developer's machine, not the shared source.
 .idea/
 .vscode/
 *.iml
+# Temporary editor state and backup files are not project source.
 *.swp
 *~
 
-# Logs and temporary files
+# Runtime logs and scratch files can be recreated and should not be committed.
 *.log
 *.tmp
 
-# Local environment and credentials
+# Local environment files and credentials may contain machine-specific or secret values.
 .env
 .env.*
+# Keep the safe example template tracked while ignoring real environment files.
 !.env.example
+# Ignore common private-key and certificate formats.
 *.pem
 *.key
 *.p12

@@ -1,14 +1,15 @@
 
 #!/bin/sh
-# this script builds and starts the cross-platform termijump application
+# Build and start the cross-platform Termi-Jump application.
 
 set -eu
 
-# change to the directory where this script is located
+# Change to the directory containing this script.
 cd "$(dirname "$0")"
 
-# build the application
+# Build the application.
 ./build.sh
 
-# run the application using the generated jar file
+# Run the application from the generated JAR.
+# exec replaces this script process so signals and exit status come from Java.
 exec java -jar "target/termijump.jar"
